@@ -8,6 +8,9 @@
 
 CFLAGS				= -g
 LDFLAGS				= -lz
+OBJS				= \
+  *.dSYM \
+  *.o
 
 #________________________________________
 #
@@ -17,7 +20,17 @@ LDFLAGS				= -lz
 #
 #
 
-all: phase1
+all: codewheel phase1
+
+#
+#
+#
+
+codewheel: codewheel.o
+	cc -o $@ $< $(LDFLAGS)
+
+codewheel.o: codewheel.c codewheel.h
+	cc $(CFLAGS) -c $< -o $@
 
 #
 #
@@ -31,7 +44,7 @@ phase1: phase1.c
 #
 
 clean:
-	-rm -fr phase1.dSYM
+	-rm -fr $(OBJS)
 
 #
 #

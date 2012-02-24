@@ -1,0 +1,4 @@
+*.dSYM
+*.o
+codewheel
+phase1
