@@ -11,10 +11,32 @@
 /*________________________________________
  */
 
+char *matrix[] = {
+  "aoeu",
+  "ocehucoheu"
+};
+
+/*________________________________________
+ */
+
 /*
  */
 
-int hd_deflate(char *abc) {
+int hd_algorithm(void) {
+  hd_decode();
+}
+
+/*
+ */
+
+int hd_decode(void) {
+  1; /*DEBUG*/
+}
+
+/*
+ */
+
+int hd_encode(char *abc) {
 
   /*
    */
@@ -53,11 +75,7 @@ int hd_deflate(char *abc) {
   /*
    */
 
-  for (i=0; i < z_strm.total_out; i++) {
-    printf("%x\n", out[i]);
-  }
-
-  1;
+  1; /*DEBUG*/
 
 }
 
@@ -65,12 +83,19 @@ int hd_deflate(char *abc) {
 /*________________________________________
  */
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+
+  /*
+    start algorithm
+    index into array on breaks
+    decode and emit content at array index
+   */
 
   /*
    */
 
-  hd_deflate(NULL);
+  hd_algorithm();
+  hd_encode(NULL);
   
   exit(0);
 }
