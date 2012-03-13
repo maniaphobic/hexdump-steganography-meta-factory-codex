@@ -9,8 +9,10 @@
 CFLAGS				= -g
 LDFLAGS				= -lz
 OBJS				= \
+  *.class \
   *.dSYM \
   *.o
+SCALAC				= scalac
 
 #________________________________________
 #
@@ -20,7 +22,7 @@ OBJS				= \
 #
 #
 
-all: codewheel phase1
+all: codewheel phase1 phase2
 
 #
 #
@@ -38,6 +40,11 @@ codewheel.o: codewheel.c codewheel.h
 
 phase1: phase1.c
 	cc $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+phase2: PhaseTwo.class
+
+PhaseTwo.class: phase2.scala
+	$(SCALAC) $<
 
 #
 #
