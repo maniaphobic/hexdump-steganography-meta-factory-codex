@@ -4,7 +4,9 @@
 
 import java.net.URL
 import scala.io.Source.fromInputStream
-object ExampleScalaGet extends App {
-val url = new URL("http://maniaphobic.org/hexdump/13425")
-fromInputStream(url.openStream).getLines.foreach(print)
+object ExampleScalaGet {
+  def main (args: Array[String]) {
+    val url = new URL(args(1))
+    fromInputStream(url.openStream).getLines.foreach(print)
+  }
 }
