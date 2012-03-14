@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #________________________________________
 # Date created:			Monday, 12 March 2012
+# Notes:
+#     - Borrowed heavily from http://www.evanfosmark.com/2008/06/xor-encryption-with-python/
 #
 
 #
