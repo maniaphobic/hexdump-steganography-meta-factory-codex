@@ -28,21 +28,20 @@ def encrypt(key, plaintext):
 #
 
 key_file			= open(sys.argv[1])
-key				= key_file.readlines()
+key				= key_file.read().lstrip().rstrip()
 key_file.close()
 
 plaintext_file			= open(sys.argv[2])
-plaintext			= plaintext_file.readlines()
+plaintext			= plaintext_file.read().lstrip().rstrip()
 plaintext_file.close()
 
+ciphertext_file			= open(sys.argv[3], 'w')
+
 #
 #
 #
 
-print plaintext; print "\n"
-ciphertext = encrypt(key, plaintext)
-print ciphertext; print "\n"
-plaintext = decrypt(key, ciphertext)
-print plaintext
+ciphertext_file.write(encrypt(key, plaintext))
+ciphertext_file.close()
 
 
