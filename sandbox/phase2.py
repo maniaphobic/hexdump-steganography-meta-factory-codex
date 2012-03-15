@@ -3,47 +3,26 @@
 # Date created:			Thursday, 15 March 2012
 #
 
-#________________________________________
-# Global imports
-#
-
-import sys
-
 
 #________________________________________
 # Class definitions
 #
 
 #
-# 
+# Codex repository objects possess knowledge of enciphered codex files
 #
 
-import sys
-import urllib2
+class CodexRepository:
 
-class Fetcher:
+    def __init__(self, base_url=None, cell=None):
+        self.base_url		= base_url
+        self.cell		= cell
 
-    def __init__(self, url=None):
-        self.debug		= False
-        self.url		= url
-
-    def fetch(self):
-        if self.debug:
-            sys.stderr.write("[DEBUG] Fetching URL '%s'.\n" % (self.url))
-        try:
-            url_handle		= urllib2.urlopen(self.url)
-        except urllib2.HTTPError, e:
-            print("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'" % (e.code, e.msg, self.url))
-            exit(1)
-        except urllib2.URLError, e:
-            print("[ERROR] '%s'" % (e.args))
-            exit(1)
-        content			= url_handle.read().lstrip().rstrip()
-        url_handle.close()
-        return content
+    def assemble_url(self, arg):
+        return "%s/%s/%s" % (self.base_url, self.cell, str(arg))
 
 #
-# 
+# Cryptographic objects en{code,crypt}/de{code,crypt}
 #
 
 from base64 import b64encode, b64decode
@@ -66,13 +45,45 @@ class Crypto:
         return self.ciphertext
 
 #
-# 
+# The utility class fetches URLs
+#
+
+import sys
+import urllib2
+
+class Fetcher:
+
+    def __init__(self, url=None):
+        self.debug		= False
+        self.url		= url
+
+    def fetch(self):
+        if self.debug:
+            sys.stderr.write("[DEBUG] Fetching URL '%s'.\n" % (self.url))
+        try:
+            url_handle		= urllib2.urlopen(self.url)
+        except urllib2.HTTPError, e:
+            sys.stderr.write("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'" % (e.code, e.msg, self.url))
+            exit(1)
+        except urllib2.URLError, e:
+            sys.stderr.write("[ERROR] '%s'" % (e.args))
+            exit(1)
+        content			= url_handle.read().lstrip().rstrip()
+        url_handle.close()
+        return content.lstrip().rstrip()
+
+#
+# This class generates mysteria for indexing the codex fragments
 #
 
 class Mysteria:
 
     def __init__(self):
         pass
+
+    #
+    # Generate mysteria
+    #
 
     def generate(self):
         prime_list		= [2]
@@ -95,35 +106,55 @@ class Mysteria:
 #
 
 #
+# Import libraries
 #
+
+import sys
+
+#
+# Instantiate objects:
+#   - Codex repository
+#   - Mysteria generator
+#   - URL fetcher
+#
+
+codex_repo			= CodexRepository('http://maniaphobic.org', 'hexdump')
+mysteria			= Mysteria()
+fetcher				= Fetcher()
+
+#
+# Create a list to contain the ciphertext fragments
+# Iterate over the mysteria
+#
+
+ciphertext_list			= []
+
+for mystery in mysteria.generate():
+
+    #
+    # Assemble the codex URL
+    # Attempt to fetch the URL, appending to the ciphertext list if successful
+    # Exit the loop upon error
+    #
+
+    fetcher.url			= codex_repo.assemble_url(mystery)
+    try:
+        ciphertext_list.append(fetcher.fetch())
+    except:
+        break
+
+#
+# Import the cryptographic key from the command line
+# Instantiate a crypto object
+# Assign the key
+# Assemble and assign the ciphertext
+# Decrypt and display the plaintext
 #
 
 try:
     key				= sys.argv[1]
 except:
     key				= "I want to believe."
-
-#
-#
-#
-
-base_url			= "http://maniaphobic.org/hexdump"
-mysteria			= Mysteria()
-ciphertext_list			= []
-
-fetcher				= Fetcher()
-fetcher.debug			= True
-for value in mysteria.generate():
-    fetcher.url			= "%s/%s.txt" % (base_url, str(value))
-    try:
-        ciphertext_list.append(fetcher.fetch().lstrip().rstrip())
-    except:
-        break
-
-#
-#
-#
-
 crypto_obj			= Crypto()
 crypto_obj.key			= key
 crypto_obj.ciphertext		= "".join(ciphertext_list)
