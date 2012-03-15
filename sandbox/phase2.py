@@ -32,8 +32,11 @@ class Fetcher:
             sys.stderr.write("[DEBUG] Fetching URL '%s'.\n" % (self.url))
         try:
             url_handle		= urllib2.urlopen(self.url)
-        except urllib2.URLError:
-            print("[ERROR] " + urllib2.URLError.message)
+        except urllib2.HTTPError, e:
+            print("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'" % (e.code, e.msg, self.url))
+            exit(1)
+        except urllib2.URLError, e:
+            print("[ERROR] '%s'" % (e.args))
             exit(1)
         content			= url_handle.read().lstrip().rstrip()
         url_handle.close()
@@ -71,10 +74,20 @@ class Mysteria:
     def __init__(self):
         pass
 
-    def calculate(self):
-        value_list		= []
-        [value_list.append("cipher_a" + chr(i)) for i in range(97,115)]
-        return value_list
+    def generate(self):
+        prime_list		= [2]
+        yield prime_list[0]
+        i			= 3
+        while True:
+            is_prime		= True
+            for prime in prime_list:
+                if i%prime == 0:
+                    is_prime	= False
+                    break
+            if is_prime:
+                yield i
+                prime_list.append(i)
+            i			+= 2
 
 
 #________________________________________
@@ -90,11 +103,6 @@ try:
 except:
     key				= "I want to believe."
 
-try:
-    plaintext			= sys.argv[2]
-except:
-    pass
-
 #
 #
 #
@@ -105,9 +113,12 @@ ciphertext_list			= []
 
 fetcher				= Fetcher()
 fetcher.debug			= True
-for value in mysteria.calculate():
-    fetcher.url			= "%s/%s" % (base_url, str(value))
-    ciphertext_list.append(fetcher.fetch().lstrip().rstrip())
+for value in mysteria.generate():
+    fetcher.url			= "%s/%s.txt" % (base_url, str(value))
+    try:
+        ciphertext_list.append(fetcher.fetch().lstrip().rstrip())
+    except:
+        break
 
 #
 #
