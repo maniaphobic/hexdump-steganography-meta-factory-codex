@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+import mpmath
+
+i = 1.0
+s = 0.001
+n = 100.0
+
+mpmath.mp.dps = 7
+
+prev_i = 0
+while i < n:
+  new_i = float(mpmath.zeta(complex(0.5,i)).imag)
+  if new_i * prev_i < 0:
+    print("%f: %f" % (i, new_i))
+  prev_i = new_i
+  i += s
+
