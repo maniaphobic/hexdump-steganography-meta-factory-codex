@@ -12,14 +12,23 @@
 # Codex repository objects possess knowledge of enciphered codex files
 #
 
+import sys
+
 class CodexRepository:
 
     def __init__(self, base_url=None, cell=None):
         self.base_url		= base_url
         self.cell		= cell
+        self.debug		= False
 
-    def assemble_url(self, arg):
-        return "%s/%s/%s" % (self.base_url, self.cell, str(arg))
+    def assemble_url(self, index):
+        assembled_url		= "%s/%s/%s" % (self.base_url, self.cell, str(index))
+        if self.debug:
+            sys.stderr.write("[DEBUG] Assembled URL '%s'.\n" % assembled_url)
+        return assembled_url
+
+    def display(self):
+        pass
 
 #
 # Cryptographic objects en{code,crypt}/de{code,crypt}
@@ -27,6 +36,7 @@ class CodexRepository:
 
 from base64 import b64encode, b64decode
 from itertools import izip, cycle
+import sys
 
 class Crypto:
 
@@ -37,10 +47,14 @@ class Crypto:
         self.plaintext		= plaintext
 
     def decrypt(self):
+        if self.debug:
+            sys.stderr.write("[DEBUG] Performing decryption.\n")
         self.plaintext		= ''.join([chr(ord(x) ^ ord(y)) for(x,y) in izip(b64decode(self.ciphertext), cycle(self.key))])
         return self.plaintext
 
     def encrypt(self):
+        if self.debug:
+            sys.stderr.write("[DEBUG] Performing encryption.\n")
         self.ciphertext		= b64encode(''.join([chr(ord(x) ^ ord(y)) for(x,y) in izip(self.plaintext, cycle(self.key))]))
         return self.ciphertext
 
@@ -63,10 +77,10 @@ class Fetcher:
         try:
             url_handle		= urllib2.urlopen(self.url)
         except urllib2.HTTPError, e:
-            sys.stderr.write("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'" % (e.code, e.msg, self.url))
+            sys.stderr.write("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'\n" % (e.code, e.msg, self.url))
             exit(1)
         except urllib2.URLError, e:
-            sys.stderr.write("[ERROR] '%s'" % (e.args))
+            sys.stderr.write("[ERROR] '%s'\n" % (e.args))
             exit(1)
         content			= url_handle.read().lstrip().rstrip()
         url_handle.close()
@@ -79,13 +93,16 @@ class Fetcher:
 class Mysteria:
 
     def __init__(self):
-        pass
+        self.debug		= False
 
     #
     # Generate mysteria
     #
 
     def generate(self):
+        pass
+
+    def generate_primes(self):
         prime_list		= [2]
         yield prime_list[0]
         i			= 3
@@ -99,6 +116,35 @@ class Mysteria:
                 yield i
                 prime_list.append(i)
             i			+= 2
+
+    def generate_zeta(self):
+        import mpmath
+        import sys
+        root_list		= {}
+        for s in [complex(0.5,t) for t in range(10,100)]:
+            try:
+                root_complex	= mpmath.findroot(mpmath.zeta, s)
+                if self.debug:
+                    sys.stderr.write("[DEBUG] Found nontrivial zeta zero at %s.\n" % str(root_complex))
+                root_imag	= float(root_complex.imag)
+                try:
+                    root_list[root_imag]
+                    if self.debug:
+                        sys.stderr.write("[DEBUG] Already found this zero, skipping.\n")
+                    next
+                except KeyError:
+                    if root_imag > 1:
+                        yield root_imag
+                        root_list[root_imag] = True
+                    else:
+                        if self.debug:
+                            sys.stderr.write("[DEBUG] Irrelevant zero, skipping.\n")
+            except ValueError, e:
+#DEBUG#                sys.stderr.write("Exception at s=%s: %s.\n" % (str(s), e.args[0])) #DEBUG#
+                pass
+            except OverflowError, e:
+#DEBUG#                sys.stderr.write("Exception at s=%s: %s.\n" % (str(s), e.args[0])) #DEBUG#
+                pass
 
 
 #________________________________________
@@ -119,8 +165,11 @@ import sys
 #
 
 codex_repo			= CodexRepository('http://maniaphobic.org', 'hexdump')
+codex_repo.debug		= True #DEBUG#
 mysteria			= Mysteria()
+mysteria.debug			= True #DEBUG#
 fetcher				= Fetcher()
+fetcher.debug			= True #DEBUG#
 
 #
 # Create a list to contain the ciphertext fragments
@@ -129,7 +178,7 @@ fetcher				= Fetcher()
 
 ciphertext_list			= []
 
-for mystery in mysteria.generate():
+for mystery in mysteria.generate_zeta():
 
     #
     # Assemble the codex URL
