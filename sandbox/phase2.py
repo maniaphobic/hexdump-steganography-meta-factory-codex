@@ -5,6 +5,13 @@
 
 
 #________________________________________
+# Global imports
+#
+
+from __future__ import print_function
+
+
+#________________________________________
 # Class definitions
 #
 
@@ -77,11 +84,13 @@ class Fetcher:
         try:
             url_handle		= urllib2.urlopen(self.url)
         except urllib2.HTTPError, e:
-            sys.stderr.write("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'\n" % (e.code, e.msg, self.url))
-            exit(1)
+            if self.debug:
+                sys.stderr.write("[ERROR] Received HTTP code %d, '%s', fetching URL '%s'\n" % (e.code, e.msg, self.url))
+            raise e
         except urllib2.URLError, e:
-            sys.stderr.write("[ERROR] '%s'\n" % (e.args))
-            exit(1)
+            if self.debug:
+                sys.stderr.write("[ERROR] '%s'\n" % (e.args))
+            raise e
         content			= url_handle.read().lstrip().rstrip()
         url_handle.close()
         return content.lstrip().rstrip()
@@ -158,13 +167,34 @@ class Mysteria:
 import sys
 
 #
+#
+#
+
+print("""
+-=| }hexdump{ CODEX RENDERER |=-
+
+
+""")
+
+print("Enter codex repository URL: ", end='')
+#DEBUG#codex_repo_url			= sys.stdin.readline().lstrip().rstrip()
+codex_repo_url			= 'http://maniaphobic.org' #DEBUG#
+print("Enter codex repository cell name: ", end='')
+#DEBUG#codex_repo_cell			= sys.stdin.readline().lstrip().rstrip()
+codex_repo_cell			= 'hexdump' #DEBUG#
+print("Enter decryption key: ", end='')
+#DEBUG#decrypt_key			= sys.stdin.readline().lstrip().rstrip()
+decrypt_key			= 'I want to believe.' #DEBUG#
+print()
+
+#
 # Instantiate objects:
 #   - Codex repository
 #   - Mysteria generator
 #   - URL fetcher
 #
 
-codex_repo			= CodexRepository('http://maniaphobic.org', 'hexdump')
+codex_repo			= CodexRepository(codex_repo_url, codex_repo_cell)
 codex_repo.debug		= True #DEBUG#
 mysteria			= Mysteria()
 mysteria.debug			= True #DEBUG#
@@ -193,19 +223,14 @@ for mystery in mysteria.generate_zeta():
         break
 
 #
-# Import the cryptographic key from the command line
 # Instantiate a crypto object
 # Assign the key
 # Assemble and assign the ciphertext
 # Decrypt and display the plaintext
 #
 
-try:
-    key				= sys.argv[1]
-except:
-    key				= "I want to believe."
 crypto_obj			= Crypto()
-crypto_obj.key			= key
+crypto_obj.key			= decrypt_key
 crypto_obj.ciphertext		= "".join(ciphertext_list)
 print(crypto_obj.decrypt())
 
