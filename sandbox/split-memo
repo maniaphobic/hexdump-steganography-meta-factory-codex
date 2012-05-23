@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+input_file="`pwd`/$1"; shift
+output_dir="`pwd`/$1"; shift
+split_prefix=$1; shift
+split_size=128
+#
+test ! -d $output_dir && mkdir $output_dir
+cd $output_dir
+split \
+  -b $split_size \
+  $input_file \
+  $split_prefix \
+  ;
+#
