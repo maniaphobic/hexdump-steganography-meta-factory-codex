@@ -19,6 +19,9 @@ SPLIT_PREFIX			= hdf_
 
 all: encrypt-memo split-encrypted-memo convert-split-to-zeta
 
+$(HDF_MEMO_ENCRYPTED): $(HDF_MEMO_KEY) $(HDF_MEMO_PLAIN)
+	$(MEMO_ENCRYPTER) $(HDF_MEMO_KEY) $(HDF_MEMO_PLAIN) $(HDF_MEMO_ENCRYPTED)
+
 convert-split-to-zeta zetafy: $(HDF_MEMO_ENCRYPTED_SPLIT)
 	$(CONVERT_SPLIT_TO_ZETA) $(HDF_MEMO_ENCRYPTED_SPLIT) $(HDF_MEMO_ENCRYPTED_ZETA)
 
@@ -27,8 +30,7 @@ ExampleScalaGet: ExampleScalaGet.class
 ExampleScalaGet.class: ExampleScalaGet.scala
 	scalac $<
 
-encrypt encrypt-memo: $(HDF_MEMO_KEY) $(HDF_MEMO_PLAIN)
-	$(MEMO_ENCRYPTER) $(HDF_MEMO_KEY) $(HDF_MEMO_PLAIN) $(HDF_MEMO_ENCRYPTED)
+encrypt encrypt-memo: $(HDF_MEMO_ENCRYPTED)
 
 PhaseTwo: PhaseTwo.class
 
@@ -39,7 +41,7 @@ split split-encrypted-memo: $(HDF_MEMO_ENCRYPTED)
 	$(MEMO_SPLITTER) $(HDF_MEMO_ENCRYPTED) $(HDF_MEMO_ENCRYPTED_SPLIT) $(SPLIT_PREFIX)
 
 upload upload-zeta:
-	rsync -av $(HDF_MEMO_ENCRYPTED_ZETA) $(REPO_PATH)
+	rsync -av $(HDF_MEMO_ENCRYPTED_ZETA)/ $(REPO_PATH)
 
 clean:
 	rm $(HDF_MEMO_ENCRYPTED) $(HDF_MEMO_ENCRYPTED_SPLIT)/* $(HDF_MEMO_ENCRYPTED_ZETA)/*
