@@ -23,15 +23,14 @@ import sys
 
 class CodexRepository:
 
-    def __init__(self, base_url=None, cell=None):
+    def __init__(self, base_url=None):
         self.base_url		= base_url
-        self.cell		= cell
         self.debug		= False
 
     def assemble_url(self, index):
-        assembled_url		= "%s/%s/%s" % (self.base_url, self.cell, str(index))
+        assembled_url		= '/'.join((self.base_url.rstrip('/'), str(index)))
         if self.debug:
-            sys.stderr.write("[DEBUG] Assembled URL '%s'.\n" % assembled_url)
+            sys.stderr.write("[NOTICE] Assembled URL '%s'.\n" % assembled_url)
         return assembled_url
 
     def display(self):
@@ -55,13 +54,13 @@ class Crypto:
 
     def decrypt(self):
         if self.debug:
-            sys.stderr.write("[DEBUG] Performing decryption.\n")
+            sys.stderr.write("[NOTICE] Performing decryption.\n")
         self.plaintext		= ''.join([chr(ord(x) ^ ord(y)) for(x,y) in izip(b64decode(self.ciphertext), cycle(self.key))])
         return self.plaintext
 
     def encrypt(self):
         if self.debug:
-            sys.stderr.write("[DEBUG] Performing encryption.\n")
+            sys.stderr.write("[NOTICE] Performing encryption.\n")
         self.ciphertext		= b64encode(''.join([chr(ord(x) ^ ord(y)) for(x,y) in izip(self.plaintext, cycle(self.key))]))
         return self.ciphertext
 
@@ -80,7 +79,7 @@ class Fetcher:
 
     def fetch(self):
         if self.debug:
-            sys.stderr.write("[DEBUG] Fetching URL '%s'.\n" % (self.url))
+            sys.stderr.write("[NOTICE] Fetching URL '%s'.\n" % (self.url))
         try:
             url_handle		= urllib2.urlopen(self.url)
         except urllib2.HTTPError, e:
@@ -134,12 +133,12 @@ class Mysteria:
             try:
                 root_complex	= mpmath.findroot(mpmath.zeta, s)
                 if self.debug:
-                    sys.stderr.write("[DEBUG] Found nontrivial zeta zero at %s.\n" % str(root_complex))
+                    sys.stderr.write("[NOTICE] Found nontrivial zeta zero at %s.\n" % str(root_complex))
                 root_imag	= float(root_complex.imag)
                 try:
                     root_list[root_imag]
                     if self.debug:
-                        sys.stderr.write("[DEBUG] Already found this zero, skipping.\n")
+                        sys.stderr.write("[NOTICE] Already found this zero, skipping.\n")
                     next
                 except KeyError:
                     if root_imag > 1:
@@ -147,7 +146,7 @@ class Mysteria:
                         root_list[root_imag] = True
                     else:
                         if self.debug:
-                            sys.stderr.write("[DEBUG] Irrelevant zero, skipping.\n")
+                            sys.stderr.write("[NOTICE] Irrelevant zero, skipping.\n")
             except ValueError, e:
 #DEBUG#                sys.stderr.write("Exception at s=%s: %s.\n" % (str(s), e.args[0])) #DEBUG#
                 pass
@@ -178,13 +177,10 @@ print("""
 
 print("Enter codex repository URL: ", end='')
 #DEBUG#codex_repo_url			= sys.stdin.readline().lstrip().rstrip()
-codex_repo_url			= 'http://maniaphobic.org' #DEBUG#
-print("Enter codex repository cell name: ", end='')
-#DEBUG#codex_repo_cell			= sys.stdin.readline().lstrip().rstrip()
-codex_repo_cell			= 'hexdump' #DEBUG#
+codex_repo_url			= 'http://maniaphobic.org/hexdump/' #DEBUG#
 print("Enter decryption key: ", end='')
 #DEBUG#decrypt_key			= sys.stdin.readline().lstrip().rstrip()
-decrypt_key			= 'I want to believe.' #DEBUG#
+decrypt_key			= '$SenTieNt_ObseRver*' #DEBUG#
 print()
 
 #
@@ -194,7 +190,7 @@ print()
 #   - URL fetcher
 #
 
-codex_repo			= CodexRepository(codex_repo_url, codex_repo_cell)
+codex_repo			= CodexRepository(codex_repo_url)
 codex_repo.debug		= True #DEBUG#
 mysteria			= Mysteria()
 mysteria.debug			= True #DEBUG#
@@ -209,6 +205,11 @@ fetcher.debug			= True #DEBUG#
 ciphertext_list			= []
 
 for mystery in mysteria.generate_zeta():
+#DEBUG#    if mystery < 100: #DEBUG#
+#DEBUG#        print(mystery)
+#DEBUG#        continue
+#DEBUG#    else:
+#DEBUG#        break
 
     #
     # Assemble the codex URL
