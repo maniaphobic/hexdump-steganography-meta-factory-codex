@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+#
+
+import glob
+import os
+import sys
+
+#
+
+split_dir			= sys.argv[1]
+zeta_dir			= sys.argv[2]
+
+zeta_zeroes			= (
+  14.1347251417,
+  21.0220396388,
+  25.0108575801,
+  30.4248761259,
+  32.9350615877,
+  37.5861781588,
+  40.9187190121,
+  43.3270732809,
+  48.0051508812,
+  49.7738324777,
+  52.9703214777,
+  56.4462476971,
+  59.3470440026,
+  60.8317785246,
+  67.0798105295,
+  65.1125440481,
+  69.5464017112,
+  72.0671576745,
+  77.1448400689,
+  75.7046906991,
+  79.3373750202,
+  82.9103808541,
+  84.7354929805,
+  87.4252746131,
+  88.8091112076,
+  92.4918992706,
+  94.6513440405,
+  95.8706342282,
+  98.8311942182
+)
+
+#
+
+zeta_index			= 0
+for fragment_split_path in sorted(glob.glob("%s/*" % split_dir)):
+    fragment_split_file_name	= fragment_split_path.split('/')[-1]
+    fragment_zeta_file_name	= "%.10f" % zeta_zeroes[zeta_index]
+    fragment_zeta_path		= '/'.join((zeta_dir, fragment_zeta_file_name))
+    os.system("cp %s %s" % (fragment_split_path, fragment_zeta_path))
+    zeta_index			+= 1
+
+#
+
